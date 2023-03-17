@@ -1,35 +1,25 @@
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSelector, useDispatch } from 'react-redux';
-import { nextStep, prevStep, setUserData } from './RegisterSlice';
+import { nextStep, prevStep, setUserData, setCurrentStep } from './RegisterSlice';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
 const RegisterForm = () => {
     const dispatch = useDispatch();
     const { currentStep, userData } = useSelector((state) => state.register);
-    const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm({ mode: 'onBlur' });
+    const { register, handleSubmit, reset, formState: { errors, isValid } } = useForm({ mode: 'onBlur' });
 
     const onSubmit = (event) => {
         console.log('Submitted', userData);
         dispatch(setUserData({ firstName: "", lastName: "", email: "", password: "" }));
+        dispatch(setCurrentStep(1));
         reset();
     };
 
     const handleChanges = (event) => {
         const { name, value } = event.target;
         dispatch(setUserData({ [name]: value }));
-    };
-
-    const [showPassword, setShowPassword] = React.useState(false);
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-    const handleMouseDownPassword = (event) => {
-        event.preventDefault();
     };
 
     return (
@@ -71,22 +61,9 @@ const RegisterForm = () => {
                             error={Boolean(errors.email)}
                             onChange={handleChanges}
                             helperText={errors.email ? "Invalid email address" : ""} />
-                        <OutlinedInput
-                            id="outlined-adornment-password"
-                            type={showPassword ? 'text' : 'password'}
-                            endAdornment={
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="toggle password visibility"
-                                        onClick={handleClickShowPassword}
-                                        onMouseDown={handleMouseDownPassword}
-                                        edge="end"
-                                    >
-                                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            }
+                        <TextField
                             label="Password"
+                            variant="outlined"
                             {...register("password", {
                                 required: true,
                                 pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
@@ -94,10 +71,13 @@ const RegisterForm = () => {
                             sx={{ margin: '10px' }}
                             error={Boolean(errors.password)}
                             onChange={handleChanges}
-                            helperText={errors.password ? "Password must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, and one number" : ""}
+                            helperText={errors.password ? <div>
+                                Password must be at least 8 characters long <br />
+                                contain at least one lowercase letter,<br /> one uppercase letter, and one number
+                            </div> : ""}
                         />
-                        <Button variant="contained" onClick={() => dispatch(prevStep())} >Previous</Button>
-                        <Button disabled={!isValid} type='submit' variant="contained" sx={{ ml: 2 }}>Submit</Button>
+                        <Button variant="contained" onClick={() => dispatch(prevStep())} sx={{ margin: '20px' }} >Previous</Button>
+                        <Button disabled={!isValid} type='submit' variant="contained" sx={{ margin: '20px' }}>Submit</Button>
                     </div>
                 )}
 

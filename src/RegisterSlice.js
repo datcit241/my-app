@@ -21,9 +21,12 @@ const registerSlice = createSlice({
         },
         setUserData: (state, action) => {
             state.userData = { ...state.userData, ...action.payload };
+        },
+        setCurrentStep: (state, action) => {
+            state.currentStep = action.payload;
         }
     }
 });
 
-export const { nextStep, prevStep, setUserData } = registerSlice.actions;
+export const { nextStep, prevStep, setUserData, setCurrentStep } = registerSlice.actions;
 export default registerSlice.reducer;   
