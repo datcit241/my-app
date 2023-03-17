@@ -7,16 +7,18 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSelector, useDispatch } from 'react-redux';
 import { nextStep, prevStep, setUserData } from './RegisterSlice';
-import React from 'react'
+import React from 'react';
+import { useForm } from 'react-hook-form';
 
 const RegisterForm = () => {
     const dispatch = useDispatch();
     const { currentStep, userData } = useSelector((state) => state.register);
+    const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm({ mode: 'onBlur' });
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
+    const onSubmit = (event) => {
         console.log('Submitted', userData);
-
+        dispatch(setUserData({ firstName: "", lastName: "", email: "", password: "" }));
+        reset();
     };
 
     const handleChanges = (event) => {
@@ -32,26 +34,28 @@ const RegisterForm = () => {
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-            <form onSubmit={handleSubmit} >
+            <form onSubmit={handleSubmit(onSubmit)} >
                 {currentStep === 1 && (
                     <div>
                         <TextField
                             label="First Name"
                             variant="outlined"
-                            onChange={handleChanges}
-                            value={userData.firstName}
-                            name="firstName"
+                            {...register("firstName", { required: true })}
                             sx={{ margin: '10px' }}
+                            error={Boolean(errors.firstName)}
+                            onChange={handleChanges}
+                            helperText={errors.firstName ? "This field is required" : ""}
                         />
                         <TextField
                             label="Last Name"
                             variant="outlined"
-                            onChange={handleChanges}
-                            value={userData.lastName}
-                            name="lastName"
+                            {...register("lastName", { required: true })}
                             sx={{ margin: '10px' }}
+                            error={Boolean(errors.lastName)}
+                            onChange={handleChanges}
+                            helperText={errors.lastName ? "This field is required" : ""}
                         />
-                        <Button variant="contained" onClick={() => dispatch(nextStep())} sx={{ margin: '20px' }} >Next</Button>
+                        <Button disabled={!isValid} variant="contained" onClick={() => dispatch(nextStep())} sx={{ margin: '20px' }} >Next</Button>
                     </div>
                 )}
                 {currentStep === 2 && (
@@ -59,10 +63,14 @@ const RegisterForm = () => {
                         <TextField
                             label="Email"
                             variant="outlined"
+                            {...register("email", {
+                                required: true,
+                                pattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                            })}
+                            sx={{ margin: '10px' }}
+                            error={Boolean(errors.email)}
                             onChange={handleChanges}
-                            value={userData.email}
-                            name="email"
-                            sx={{ margin: '10px' }} />
+                            helperText={errors.email ? "Invalid email address" : ""} />
                         <OutlinedInput
                             id="outlined-adornment-password"
                             type={showPassword ? 'text' : 'password'}
@@ -79,14 +87,20 @@ const RegisterForm = () => {
                                 </InputAdornment>
                             }
                             label="Password"
-                            name="password"
-                            value={userData.password}
-                            onChange={handleChanges}
+                            {...register("password", {
+                                required: true,
+                                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+                            })}
                             sx={{ margin: '10px' }}
+                            error={Boolean(errors.password)}
+                            onChange={handleChanges}
+                            helperText={errors.password ? "Password must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, and one number" : ""}
                         />
                         <Button variant="contained" onClick={() => dispatch(prevStep())} >Previous</Button>
+                        <Button disabled={!isValid} type='submit' variant="contained" sx={{ ml: 2 }}>Submit</Button>
                     </div>
                 )}
+
             </form>
         </div>
     )
